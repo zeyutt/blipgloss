@@ -12,5 +12,5 @@ COPY . .
 # 安装 XGO 用于交叉编译
 RUN go install github.com/karalabe/xgo@latest
 
-# 测试多平台构建
-CMD ["sh", "-c", "xgo -go 1.20.3 -out release/blipgloss --targets=linux/amd64,linux/arm64,darwin/amd64,darwin/arm64 -ldflags='-s -w' -buildmode=c-shared ."]
+# 测试多平台构建 - 修改 Go 版本参数
+CMD ["sh", "-c", "xgo -go 1.20 -out release/blipgloss --targets=linux/amd64,linux/arm64,darwin/amd64,darwin/arm64 -ldflags='-s -w' -buildmode=c-shared ."]

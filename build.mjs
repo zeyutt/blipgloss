@@ -51,7 +51,7 @@ if (output.success) {
   
   const proc = Bun.spawnSync([
     XGO,
-    "-go", "1.20.3",
+    "-go", "1.20",  // 修改：使用 1.20 而不是 1.20.3
     "-out", "release/blipgloss",
     `--targets=${TARGETS}`,
     "-ldflags=-s -w",
