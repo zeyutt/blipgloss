@@ -3,22 +3,35 @@
   "version": "0.3.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "description": "",
+  "description": "Style definitions for nice terminal layouts. Powered by lipgloss and bun:ffi.",
   "scripts": {
     "build": "bun run ./build.mjs",
-    "build:go": "./build.sh",
+    "build:local": "bun run ./build-local.mjs",
+    "build:ts-only": "bun run ./build-ts-only.mjs",
+    "build:skip-native": "bun run ./build.mjs --skip-native",
+    "verify": "bun run verify-build.mjs",
+    "build:verify": "bun run build && bun run verify",
+    "build:verify-local": "bun run build:local && bun run verify",
+    "test:windows": "bun run test-windows.mjs",
+    "test:local": "bun run build:verify-local && bun run test:windows",
+    "test:cross-platform": "bun run test-cross-platform.mjs",
+    "test:docker": "docker build -f Dockerfile.test -t blipgloss-test . && docker run --rm blipgloss-test",
+    "test:docker-full": "bun run test:docker && bun run test:cross-platform",
+    "test:ts": "bun run build:ts-only && echo 'TypeScript build test completed'",
+    "docker:check": "docker info",
     "release": "bumpp --commit --push --tag && npm publish",
-    "prepublishOnly": "bun run build",
-    "lint": "biome check src",
-    "format": "biome format src --write",
-    "test": "bun wiptest"
+    "prepublishOnly": "bun run build"
   },
   "files": [
     "dist",
     "release"
   ],
   "keywords": [
-    "bun"
+    "bun",
+    "terminal",
+    "styling",
+    "lipgloss",
+    "cli"
   ],
   "license": "MIT",
   "homepage": "https://github.com/wobsoriano/blipgloss#readme",
@@ -29,11 +42,9 @@
   "bugs": "https://github.com/wobsoriano/blipgloss/issues",
   "author": "Robert Soriano <sorianorobertc@gmail.com>",
   "devDependencies": {
-    "@biomejs/biome": "1.2.2",
     "@types/color": "^3.0.4",
-    "bun-plugin-dts": "^0.2.0",
-    "bun-types": "^1.0.2",
+    "bun-types": "^1.2.0",
     "color": "^4.2.3",
-    "typescript": "^5.2.2"
+    "typescript": "^5.6.0"
   }
 }

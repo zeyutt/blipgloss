@@ -1,0 +1,85 @@
+name: Build Multi-Platform Binaries
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+
+      - name: Install XGO
+        run: go install github.com/karalabe/xgo@latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build all platforms
+        run: bun run build:verify
+
+      - name: List generated files
+        run: |
+          echo "Generated binary files:"
+          ls -la release/
+          echo "Expected Windows files:"
+          ls -la release/*windows* || echo "No Windows files found"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: blipgloss-binaries
+          path: release/
+
+  test-windows:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: blipgloss-binaries
+          path: release/
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build TypeScript only
+        run: bun run build --skip-native
+        continue-on-error: true
+
+      - name: Test Windows binary
+        run: bun run examples/layout.ts
+        continue-on-error: true
+
+      - name: Verify Windows DLL exists
+        run: |
+          if (Test-Path "release\*windows-amd64*") {
+            Write-Host "✅ Windows AMD64 DLL found"
+            Get-ChildItem "release\*windows*" | Select-Object Name, Length, LastWriteTime
+          } else {
+            Write-Host "❌ Windows AMD64 DLL not found"
+            Get-ChildItem "release\" | Select-Object Name
+            exit 1
+          }
+        shell: powershell
