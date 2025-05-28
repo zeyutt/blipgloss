@@ -1,16 +1,42 @@
 import { FFIType, dlopen, suffix } from 'bun:ffi';
+import { existsSync } from 'node:fs'
+import path from 'node:path'
 
-const { platform, arch } = process;
+const platform = process.platform
+const arch = process.arch === 'x64' ? 'amd64' : process.arch
 
-let filename: string;
-
-if (arch === 'x64') {
-	filename = `../release/blipgloss-${platform}-amd64.${suffix}`;
+// 修复平台名称映射
+let platformName: string;
+if (platform === 'win32') {
+   platformName = 'windows';  // 映射 win32 -> windows
+} else if (platform === 'darwin') {
+   platformName = 'darwin';
 } else {
-	filename = `../release/blipgloss-${platform}-${arch}.${suffix}`;
+   platformName = 'linux';
 }
 
-const location = new URL(filename, import.meta.url).pathname;
+let suffix: string;
+if (platform === 'win32') {
+   suffix = 'dll';
+} else if (platform === 'darwin') {
+   suffix = 'dylib';
+} else {
+   suffix = 'so';
+}
+
+// 使用修正后的平台名称
+const filename = `blipgloss-${platformName}-${arch}.${suffix}`;
+const location = path.resolve(import.meta.dir, '..', 'release', filename);
+
+
+// const location = new URL(filename, import.meta.url).pathname;
+
+console.log('Loading library from:', location);
+console.log('File exists:', existsSync(location));
+
+if (!existsSync(location)) {
+  throw new Error(`Library file not found: ${location}`);
+}
 
 export const { symbols } = dlopen(location, {
 	NewStyle: {
